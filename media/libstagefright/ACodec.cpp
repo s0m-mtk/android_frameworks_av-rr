@@ -725,7 +725,7 @@ status_t ACodec::handleSetSurface(const sp<Surface> &surface) {
         if (storingMetadataInDecodedBuffers()
                 && !mLegacyAdaptiveExperiment
                 && info.mStatus == BufferInfo::OWNED_BY_NATIVE_WINDOW) {
-            ALOGV("skipping buffer %p", info.mGraphicBuffer->getNativeBuffer());
+            ALOGV("skipping buffer %p", info.mGraphicBuffer.get() ? info.mGraphicBuffer->getNativeBuffer() : 0x0);
             continue;
         }
         ALOGV("attaching buffer %p", info.mGraphicBuffer->getNativeBuffer());
@@ -1590,6 +1590,8 @@ status_t ACodec::setComponentRole(
             "audio_decoder.ac3", "audio_encoder.ac3" },
         { MEDIA_MIMETYPE_AUDIO_EAC3,
             "audio_decoder.eac3", "audio_encoder.eac3" },
+        { MEDIA_MIMETYPE_VIDEO_MPEG4_DP,
+            "video_decoder.mpeg4", NULL },
     };
 
     static const size_t kNumMimeToRole =
@@ -5805,7 +5807,7 @@ bool ACodec::LoadedState::onConfigureComponent(
                 0,     // flags
                 &matchingCodecs);
 
-            status_t err = mCodec->mOMX->freeNode(mCodec->mNode);
+            err = mCodec->mOMX->freeNode(mCodec->mNode);
 
             if (err != OK) {
                 ALOGE("Failed to freeNode");
