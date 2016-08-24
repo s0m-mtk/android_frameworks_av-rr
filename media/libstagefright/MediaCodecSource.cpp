@@ -411,6 +411,12 @@ status_t MediaCodecSource::initEncoder() {
             mCodecLooper, outputMIME.c_str(), true /* encoder */);
     }
 
+    // remove camera tag from mime
+    if (outputMIME.endsWith("_cam")) {
+        outputMIME.erase(outputMIME.size() - 4, 4);
+        mOutputFormat->setString("mime", outputMIME);
+    }
+
     if (mEncoder == NULL) {
         return NO_INIT;
     }
@@ -665,7 +671,8 @@ status_t MediaCodecSource::onStart(MetaData *params) {
 
     if (mFlags & FLAG_USE_SURFACE_INPUT) {
         auto key = kKeyTime;
-        if (!property_get_bool("media.camera.ts.monotonic", true)) {
+        if (property_get_bool("persist.camera.HAL3.enabled", true) &&
+             !property_get_bool("media.camera.ts.monotonic", true)) {
             key = kKeyTimeBoot;
         }
 
